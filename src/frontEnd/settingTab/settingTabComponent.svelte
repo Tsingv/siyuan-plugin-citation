@@ -415,7 +415,7 @@
   }
 
   function _checkDebugBridge(dtype: string): boolean {
-    if (["Zotero (debug-bridge)", "Juris-M (debug-bridge)"].indexOf(dtype) != -1) return true;
+    if (["Zotero (debug-bridge)", "Juris-M (debug-bridge)", "Zotero (Web API)", "Juris-M (Web API)"].indexOf(dtype) != -1) return true;
     else return false;
   }
 
