@@ -67,11 +67,11 @@ export class Database {
         break;
       }
       case "Zotero (Web API)": {
-        this.dataModal = new ZoteroWebAPIModal(this.plugin, "Zotero", this.plugin.data[STORAGE_NAME].useItemKey);
+        this.dataModal = new ZoteroWebAPIModal(this.plugin, "Zotero");
         break;
       }
       case "Juris-M (Web API)": {
-        this.dataModal = new ZoteroWebAPIModal(this.plugin, "Juris-M", this.plugin.data[STORAGE_NAME].useItemKey);
+        this.dataModal = new ZoteroWebAPIModal(this.plugin, "Juris-M");
         break;
       }
     }

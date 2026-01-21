@@ -641,12 +641,14 @@ export class ZoteroWebAPIModal extends DataModal {
   private searchDialog!: SearchDialog;
   private userId: string = "0"; // 本地API使用userId 0
 
-  constructor(plugin: SiYuanPluginCitation, zoteroType: ZoteroType, private useItemKey = true) {
+  constructor(plugin: SiYuanPluginCitation, zoteroType: ZoteroType, useItemKey?: boolean) {
     super();
     this.plugin = plugin;
     this.type = zoteroType;
     this.logger = createLogger(`zotero WebAPI modal: ${zoteroType}`);
     this.apiBaseUrl = `http://127.0.0.1:${this._getPort(this.type)}/api`;
+    // Web API 模式强制使用 itemKey，不依赖 Better BibTeX
+    this.useItemKey = true;
     this.searchOptions = {
       includeScore: true,
       includeMatches: true,
@@ -657,6 +659,7 @@ export class ZoteroWebAPIModal extends DataModal {
         {name: "keystring", getFn: (entry: { title: string; year: string; authorString: string; }) => entry.title + "\n" + entry.year + "\n" + entry.authorString}
       ]
     };
+    if (isDev) this.logger.info("Web API 模式已启用，强制使用 itemKey 作为索引");
   }
 
   public async buildModal() {
@@ -872,13 +875,34 @@ export class ZoteroWebAPIModal extends DataModal {
     // 处理注释（如果有）
     const annotations: any[] = [];
 
+    // 从 extra 字段提取 Citation Key
+    // Better BibTeX 可能使用多种格式存储 Citation Key
+    let citekey = "";
+    if (data.extra) {
+      const patterns = [
+        /Citation Key:\s*(.+)/i,     // Better BibTeX 标准格式
+        /bibtex:\s*(.+)/i,            // 旧版格式
+        /bibtex\*:\s*(.+)/i,          // 带星号格式
+        /tex\.ids:\s*(.+)/i,          // tex.ids 格式
+      ];
+
+      for (const pattern of patterns) {
+        const match = data.extra.match(pattern);
+        if (match) {
+          // 提取第一行作为 citekey（避免多行的情况）
+          citekey = match[1].split('\n')[0].trim();
+          break;
+        }
+      }
+    }
+
     return {
       abstractNote: data.abstractNote,
       accessDate: data.accessDate,
       attachments: attachments,
       annotations: annotations,
-      citekey: data.extra?.match(/Citation Key: (.+)/)?.[1],
-      citationKey: data.extra?.match(/Citation Key: (.+)/)?.[1],
+      citekey: citekey,
+      citationKey: citekey,
       conferenceName: data.conferenceName,
       creators: data.creators,
       thesisType: data.thesisType,

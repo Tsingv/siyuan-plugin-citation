@@ -6,7 +6,9 @@
 
 1. **Zotero 7** 已安装并运行
 2. **思源笔记** 已安装此插件
-3. （可选）**Better BibTeX** 插件用于生成 Citation Key
+3. ~~Better BibTeX 插件~~ **不需要！**
+
+**重要说明**: Web API 模式**强制使用 itemKey 作为索引**，无需安装任何第三方插件。这是为了保持简单、稳定、无依赖的设计理念。
 
 ### 配置步骤
 
@@ -23,7 +25,7 @@
 1. **选择笔记本**: 选择存储文献笔记的笔记本
 2. **设置文献库路径**: 例如 `/References/`
 3. **数据库类型**: 选择 **"Zotero (Web API)"**
-4. **使用 itemKey 作为索引**: ✓ 勾选（推荐）
+4. ~~使用 itemKey 作为索引~~: Web API 模式自动使用 itemKey（无需勾选，选项会被禁用）
 
 #### 3. 重新载入数据库
 
@@ -117,13 +119,12 @@
 2. 检查 Zotero 是否在 23119 端口运行
 3. 尝试在浏览器访问: `http://localhost:23119/api/users/0/items?limit=1`
 
-### Q2: 找不到 Citation Key
+### Q2: Web API 模式可以使用 Citation Key 吗？
 
-**解决方法**:
-1. 安装 Better BibTeX 插件
-2. 在 Better BibTeX 设置中配置 Citation Key 格式
-3. 右键点击文献 → Better BibTeX → Refresh BibTeX key
-4. 或者使用 itemKey 模式（勾选"使用 itemKey 作为索引"）
+**回答**: 不可以。Web API 模式强制使用 itemKey 以保持简单和稳定。
+
+- **itemKey**: Zotero 内置，永不改变，无需任何插件
+- **如果需要 Citation Key**: 请选择 debug-bridge 模式
 
 ### Q3: 附件链接无法打开
 
@@ -136,23 +137,32 @@
 
 **解决方法**:
 1. Web API 模式首次加载会获取所有文献，可能需要一些时间
-2. 如果文献库很大（>1000条），考虑：
-   - 使用"Zotero"搜索对话框类型（在debug-bridge设置中）
-   - 或等待首次加载完成后，后续搜索会更快
+2. 如果文献库很大（>1000条），首次加载后会缓存，后续搜索会更快
+3. 性能测试显示：获取100条items约0.13秒
 
 ## 技术细节
 
-### itemKey vs citekey
+### itemKey 说明
 
-| 特性 | itemKey | citekey |
-|------|---------|---------|
-| **来源** | Zotero 内置 | Better BibTeX 生成 |
-| **格式** | 8位随机字符 (如 `BNQ6EZIN`) | 可自定义 (如 `smith2024`) |
-| **稳定性** | 永不改变 | 可能改变 |
-| **可读性** | 低 | 高 |
-| **依赖** | 无 | 需要 Better BibTeX |
+Web API 模式使用 Zotero 内置的 **Item Key** 作为唯一标识符：
 
-**推荐**: 使用 itemKey 模式更稳定可靠
+**特点**:
+- **格式**: 8位字母数字组合（如 `BNQ6EZIN`）
+- **完整索引**: `{libraryID}_{itemKey}`（如 `6690314_BNQ6EZIN`）
+- **自动生成**: 创建文献时 Zotero 自动分配
+- **永不改变**: 即使修改文献信息也不会变
+- **全局唯一**: 在同一个 Zotero 账户中唯一
+- **无需插件**: Zotero 原生功能
+
+### 与 debug-bridge 模式的比较
+
+| 特性 | Web API 模式 | debug-bridge 模式 |
+|------|--------------|-------------------|
+| **索引方式** | 仅 itemKey | itemKey 或 Citation Key |
+| **依赖** | 无 | 可选 Better BibTeX |
+| **复杂度** | 低 | 中等 |
+| **稳定性** | 高 | 中等 |
+| **推荐场景** | 新用户、追求稳定 | LaTeX 用户、已用 BBT |
 
 ### API 请求示例
 
